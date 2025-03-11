@@ -313,7 +313,7 @@
 <body>
     <header>
         <h1>Registro de Rutina del Bebé</h1>
-        <div id="version" style="font-size: 0.75rem; margin-top: 0.25rem;">Versión móvil 1.3</div>
+        <div id="version" style="font-size: 0.75rem; margin-top: 0.25rem;">Versión móvil 1.4</div>
     </header>
     
     <main>
@@ -502,15 +502,25 @@
                     return;
                 }
                 
+                //const activity = {
+                //    id: Date.now(),
+                //    type: activityType,
+                //    date: activityDate,  // Guardamos el string de fecha original
+                //    time: activityTime,  // Guardamos el string de hora original
+                //    hour: parseInt(hours, 10),
+                //    note: activityNote,
+                //    timestamp: activityTimestamp
+                //};
+
                 const activity = {
                     id: Date.now(),
                     type: activityType,
-                    date: activityDate,  // Guardamos el string de fecha original
-                    time: activityTime,  // Guardamos el string de hora original
-                    hour: parseInt(hours, 10),
-                    note: activityNote,
-                    timestamp: activityTimestamp
+                    date: activityDate,  // Guardamos el string exacto
+                    time: activityTime,  // Guardamos el string exacto
+                    fullDateTime: `${activityDate} ${activityTime}`,  // Guardamos la combinación exacta
+                    note: activityNote
                 };
+
                 
                 babyActivities.push(activity);
                 localStorage.setItem('babyActivities', JSON.stringify(babyActivities));
@@ -527,6 +537,9 @@
                 updateHistoryList();
                 
                 alert('¡Actividad registrada con éxito!');
+
+                console.log("Fecha guardada:", activity.date, "Hora guardada:", activity.time);
+
             });
         };
         
