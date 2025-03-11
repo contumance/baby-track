@@ -483,13 +483,16 @@
                 
                 // Creamos un objeto date directamente con los componentes
                 // Nota: month es 0-indexed en JavaScript Date
-                const activityDateTime = new Date(
-                    parseInt(year), 
-                    parseInt(month) - 1, 
-                    parseInt(day), 
-                    parseInt(hours), 
-                    parseInt(minutes)
-                );
+                //const activityDateTime = new Date(
+                //    parseInt(year), 
+                //    parseInt(month) - 1, 
+                //    parseInt(day), 
+                //    parseInt(hours), 
+                //    parseInt(minutes)
+                //);
+
+                const activityDateTime = new Date(`${activityDate}T${activityTime}:00`);
+
                 
                 const activityTimestamp = activityDateTime.getTime();
                 
