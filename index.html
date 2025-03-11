@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
-    <title>Rutina del día</title>
+    <title>Registro de Rutina del Bebé</title>
     <style>
         :root {
             --color-teta: #F4A261;
@@ -312,8 +312,8 @@
 </head>
 <body>
     <header>
-        <h1>Rutina del día</h1>
-        <div id="version" style="font-size: 0.75rem; margin-top: 0.25rem;">Versión móvil 1.1</div>
+        <h1>Registro de Rutina del Bebé</h1>
+        <div id="version" style="font-size: 0.75rem; margin-top: 0.25rem;">Versión móvil 1.2</div>
     </header>
     
     <main>
@@ -354,7 +354,7 @@
                         <input type="text" id="activity-note" placeholder="Añadir comentario...">
                     </div>
                     
-                    <button type="submit">Agregar</button>
+                    <button type="submit">Guardar Actividad</button>
                 </form>
             </div>
         </div>
@@ -362,7 +362,7 @@
         <div id="view-tab" class="tab-content">
             <div class="controls">
                 <button id="add-date-btn">+ Añadir fecha</button>
-                <input type="date" id="chart-date-picker" style="display: none;">
+                <input type="date" id="chart-date-picker" style="position: absolute; opacity: 0; width: 1px; height: 1px;">
             </div>
             
             <div class="selected-dates" id="selected-dates">
@@ -430,20 +430,25 @@
         
         // Configuración de fecha y hora actuales
         const setCurrentDateTime = () => {
-            const now = new Date();
+            // Utilizamos Date.now() para obtener el timestamp actual
+            const now = new Date(Date.now());
             const dateInput = document.getElementById('activity-date');
             const timeInput = document.getElementById('activity-time');
             
-            // Formato YYYY-MM-DD para input date
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const day = String(now.getDate()).padStart(2, '0');
-            const formattedDate = `${year}-${month}-${day}`;
+            // Obtenemos la zona horaria local para asegurar que usamos la fecha correcta
+            const timezoneOffset = now.getTimezoneOffset() * 60000; // convertir minutos a milisegundos
+            const localTime = new Date(now.getTime() - timezoneOffset);
+            
+            // Formato YYYY-MM-DD para input date - usando la fecha local
+            const formattedDate = localTime.toISOString().split('T')[0];
             
             // Formato HH:MM para input time
             const hours = String(now.getHours()).padStart(2, '0');
             const minutes = String(now.getMinutes()).padStart(2, '0');
             const formattedTime = `${hours}:${minutes}`;
+            
+            console.log("Fecha actual configurada: ", formattedDate);
+            console.log("Hora actual configurada: ", formattedTime);
             
             // Establecer valores y disparar eventos para asegurar que los navegadores móviles los detecten
             dateInput.value = formattedDate;
@@ -466,7 +471,19 @@
                 const activityTime = document.getElementById('activity-time').value;
                 const activityNote = document.getElementById('activity-note').value;
                 
-                const activityTimestamp = new Date(`${activityDate}T${activityTime}`).getTime();
+                console.log("Registrando actividad con fecha:", activityDate);
+                console.log("Registrando actividad con hora:", activityTime);
+                
+                // Crear fecha con constructor ISO string para mayor precisión
+                const dateTimeStr = `${activityDate}T${activityTime}:00`;
+                const activityDateTime = new Date(dateTimeStr);
+                const activityTimestamp = activityDateTime.getTime();
+                
+                // Verificar si la fecha es válida
+                if (isNaN(activityTimestamp)) {
+                    alert('Error: La fecha o la hora no son válidas. Por favor, inténtalo de nuevo.');
+                    return;
+                }
                 
                 const activity = {
                     id: Date.now(),
@@ -502,13 +519,33 @@
             const datePicker = document.getElementById('chart-date-picker');
             const selectedDatesContainer = document.getElementById('selected-dates');
             
-            addDateBtn.addEventListener('click', () => {
-                datePicker.style.display = 'block';
+            // Mejorar la interacción para dispositivos móviles
+            addDateBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                // En lugar de mostrar/ocultar, usamos el click nativo que funciona mejor en móviles
+                datePicker.click();
+            });
+            
+            // También añadimos soporte para touch en móviles
+            addDateBtn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                // Configurar la fecha actual por defecto
+                const now = new Date(Date.now());
+                const timezoneOffset = now.getTimezoneOffset() * 60000;
+                const localTime = new Date(now.getTime() - timezoneOffset);
+                const defaultDate = localTime.toISOString().split('T')[0];
+                
+                // Configurar la fecha actual como valor por defecto
+                datePicker.value = defaultDate;
+                
+                // Simular click nativo que abre el selector de fecha
                 datePicker.focus();
+                datePicker.click();
             });
             
             datePicker.addEventListener('change', () => {
                 const selectedDate = datePicker.value;
+                console.log("Fecha seleccionada para gráfico:", selectedDate);
                 
                 // Verificamos si la fecha ya está seleccionada
                 if (!selectedDates.includes(selectedDate) && selectedDates.length < 5) {
@@ -517,10 +554,21 @@
                     generateChart();
                 } else if (selectedDates.length >= 5) {
                     alert('No puedes seleccionar más de 5 fechas a la vez.');
+                } else if (selectedDates.includes(selectedDate)) {
+                    alert('Esta fecha ya está seleccionada.');
                 }
                 
-                datePicker.style.display = 'none';
-                datePicker.value = '';
+                // Asegurarnos que el datepicker esté visible para dispositivos móviles
+                datePicker.style.display = 'inline-block';
+                datePicker.style.opacity = '0';
+                datePicker.style.position = 'absolute';
+                datePicker.style.width = '1px';
+                datePicker.style.height = '1px';
+                
+                // Reseteamos el valor para permitir seleccionar la misma fecha otra vez
+                setTimeout(() => {
+                    datePicker.value = '';
+                }, 100);
             });
             
             // Función para actualizar UI de fechas seleccionadas
