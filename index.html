@@ -313,7 +313,7 @@
 <body>
     <header>
         <h1>Registro de Rutina del Bebé</h1>
-        <div id="version" style="font-size: 0.75rem; margin-top: 0.25rem;">Versión móvil 1.2</div>
+        <div id="version" style="font-size: 0.75rem; margin-top: 0.25rem;">Versión móvil 1.3 (Uruguay)</div>
     </header>
     
     <main>
@@ -424,30 +424,32 @@
     </main>
     
     <script>
+        // Definición de zona horaria para Uruguay (UTC-3)
+        const TIMEZONE_OFFSET_URUGUAY = -3 * 60; // -3 horas en minutos
+        
         // Modelo de datos
         let babyActivities = JSON.parse(localStorage.getItem('babyActivities')) || [];
         const selectedDates = [];
         
-        // Configuración de fecha y hora actuales
+        // Configuración de fecha y hora actuales (ajustado para Uruguay UTC-3)
         const setCurrentDateTime = () => {
-            // Utilizamos Date.now() para obtener el timestamp actual
-            const now = new Date(Date.now());
+            // Crear fecha con hora actual en la zona horaria local
+            const now = new Date();
             const dateInput = document.getElementById('activity-date');
             const timeInput = document.getElementById('activity-time');
             
-            // Obtenemos la zona horaria local para asegurar que usamos la fecha correcta
-            const timezoneOffset = now.getTimezoneOffset() * 60000; // convertir minutos a milisegundos
-            const localTime = new Date(now.getTime() - timezoneOffset);
-            
-            // Formato YYYY-MM-DD para input date - usando la fecha local
-            const formattedDate = localTime.toISOString().split('T')[0];
+            // Formato fecha específico para Uruguay (UTC-3)
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const formattedDate = `${year}-${month}-${day}`;
             
             // Formato HH:MM para input time
             const hours = String(now.getHours()).padStart(2, '0');
             const minutes = String(now.getMinutes()).padStart(2, '0');
             const formattedTime = `${hours}:${minutes}`;
             
-            console.log("Fecha actual configurada: ", formattedDate);
+            console.log("Fecha actual configurada (Uruguay): ", formattedDate);
             console.log("Hora actual configurada: ", formattedTime);
             
             // Establecer valores y disparar eventos para asegurar que los navegadores móviles los detecten
@@ -474,9 +476,21 @@
                 console.log("Registrando actividad con fecha:", activityDate);
                 console.log("Registrando actividad con hora:", activityTime);
                 
-                // Crear fecha con constructor ISO string para mayor precisión
-                const dateTimeStr = `${activityDate}T${activityTime}:00`;
-                const activityDateTime = new Date(dateTimeStr);
+                // Para mantener la fecha exactamente como fue ingresada, sin ajustes de zona horaria
+                // Separamos los componentes de la fecha
+                const [year, month, day] = activityDate.split('-');
+                const [hours, minutes] = activityTime.split(':');
+                
+                // Creamos un objeto date directamente con los componentes
+                // Nota: month es 0-indexed en JavaScript Date
+                const activityDateTime = new Date(
+                    parseInt(year), 
+                    parseInt(month) - 1, 
+                    parseInt(day), 
+                    parseInt(hours), 
+                    parseInt(minutes)
+                );
+                
                 const activityTimestamp = activityDateTime.getTime();
                 
                 // Verificar si la fecha es válida
@@ -488,9 +502,9 @@
                 const activity = {
                     id: Date.now(),
                     type: activityType,
-                    date: activityDate,
-                    time: activityTime,
-                    hour: parseInt(activityTime.split(':')[0], 10),
+                    date: activityDate,  // Guardamos el string de fecha original
+                    time: activityTime,  // Guardamos el string de hora original
+                    hour: parseInt(hours, 10),
                     note: activityNote,
                     timestamp: activityTimestamp
                 };
@@ -530,10 +544,11 @@
             addDateBtn.addEventListener('touchend', (e) => {
                 e.preventDefault();
                 // Configurar la fecha actual por defecto
-                const now = new Date(Date.now());
-                const timezoneOffset = now.getTimezoneOffset() * 60000;
-                const localTime = new Date(now.getTime() - timezoneOffset);
-                const defaultDate = localTime.toISOString().split('T')[0];
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const day = String(now.getDate()).padStart(2, '0');
+                const defaultDate = `${year}-${month}-${day}`;
                 
                 // Configurar la fecha actual como valor por defecto
                 datePicker.value = defaultDate;
