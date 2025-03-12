@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <!-- Resto del head se mantiene igual -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -74,7 +73,8 @@
         
         /* Estilo para input date en Safari móvil */
         input[type="date"],
-        input[type="time"] {
+        input[type="time"],
+        input[type="number"] {
             min-height: 44px;
         }
         
@@ -300,6 +300,13 @@
             padding: 0.25rem;
         }
         
+        .activity-block {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            z-index: 1;
+        }
+        
         @media (min-width: 768px) {
             main {
                 max-width: 800px;
@@ -314,7 +321,7 @@
 <body>
     <header>
         <h1>Registro de Rutina del Bebé</h1>
-        <div id="version" style="font-size: 0.75rem; margin-top: 0.25rem;">Versión móvil 1.1</div>
+        <div id="version" style="font-size: 0.75rem; margin-top: 0.25rem;">Versión móvil 1.2</div>
     </header>
     
     <main>
@@ -348,6 +355,11 @@
                     <div>
                         <label for="activity-time">Hora:</label>
                         <input type="time" id="activity-time" required>
+                    </div>
+                    
+                    <div>
+                        <label for="activity-duration">Duración (minutos, opcional):</label>
+                        <input type="number" id="activity-duration" min="1" max="1440" placeholder="Duración en minutos">
                     </div>
                     
                     <div>
@@ -429,6 +441,26 @@
         let babyActivities = JSON.parse(localStorage.getItem('babyActivities')) || [];
         const selectedDates = [];
         
+        // Convertir actividades antiguas si no tienen duración
+        const migrateOldActivities = () => {
+            let needsMigration = false;
+            
+            babyActivities.forEach(activity => {
+                if (activity.duration === undefined) {
+                    activity.duration = 0; // Valor por defecto
+                    needsMigration = true;
+                }
+            });
+            
+            if (needsMigration) {
+                localStorage.setItem('babyActivities', JSON.stringify(babyActivities));
+                console.log('Se han migrado las actividades antiguas al nuevo formato');
+            }
+        };
+        
+        // Inicializar migración
+        migrateOldActivities();
+        
         // Configuración de fecha y hora actuales
         const setCurrentDateTime = () => {
             const now = new Date();
@@ -465,17 +497,17 @@
                 const activityType = document.getElementById('activity-type').value;
                 const activityDate = document.getElementById('activity-date').value;
                 const activityTime = document.getElementById('activity-time').value;
+                const activityDuration = parseInt(document.getElementById('activity-duration').value) || 0;
                 const activityNote = document.getElementById('activity-note').value;
                 
-                // MODIFICACIÓN: Crear un Date con la hora local especificada
-                // Esto asegura que no haya problemas con la zona horaria
+                // Crear un Date con la hora local especificada
                 const [year, month, day] = activityDate.split('-').map(Number);
                 const [hours, minutes] = activityTime.split(':').map(Number);
                 const activityDateTime = new Date(year, month - 1, day, hours, minutes);
                 const activityTimestamp = activityDateTime.getTime();
                 
                 // Para depuración
-                console.log(`Fecha seleccionada: ${activityDate}, Hora: ${activityTime}`);
+                console.log(`Fecha seleccionada: ${activityDate}, Hora: ${activityTime}, Duración: ${activityDuration}`);
                 console.log(`Fecha creada: ${activityDateTime}, Timestamp: ${activityTimestamp}`);
                 
                 const activity = {
@@ -484,6 +516,8 @@
                     date: activityDate,  // Mantener la fecha original como string
                     time: activityTime,
                     hour: parseInt(activityTime.split(':')[0], 10),
+                    minute: parseInt(activityTime.split(':')[1], 10),
+                    duration: activityDuration,
                     note: activityNote,
                     timestamp: activityTimestamp
                 };
@@ -608,36 +642,111 @@
                     cell.style.gridColumn = `${index + 2} / ${index + 3}`;
                     cell.style.gridRow = `${hour + 2} / ${hour + 3}`;
                     
-                    // Buscamos la actividad para esta fecha y hora
-                    const activity = findActivity(date, hour);
-                    if (activity) {
-                        cell.classList.add(`activity-${activity.type}`);
-                        
-                        // Tooltip para mostrar detalles
-                        cell.title = `${formatTime(activity.time)} - ${getActivityName(activity.type)}${activity.note ? ` - ${activity.note}` : ''}`;
-                    }
+                    // Buscamos todas las actividades para esta fecha y hora
+                    const activities = findActivitiesForHour(date, hour);
                     
+                    // Creamos la celda base (vacía)
                     chartContainer.appendChild(cell);
+                    
+                    // Añadimos cada actividad como un bloque dentro de la celda
+                    activities.forEach(activity => {
+                        addActivityBlock(cell, activity, hour);
+                    });
                 });
             }
         };
         
-        // Función para encontrar la actividad más reciente para una fecha y hora
-        const findActivity = (date, hour) => {
-            // Filtramos actividades para esta fecha y hora
-            const activitiesForHour = babyActivities.filter(activity => 
+        // Función para encontrar todas las actividades para una fecha y hora
+        const findActivitiesForHour = (date, hour) => {
+            // Filtramos actividades para esta fecha
+            return babyActivities.filter(activity => 
                 activity.date === date && 
-                activity.hour === hour
+                (
+                    // La actividad comienza en esta hora
+                    activity.hour === hour ||
+                    // O la actividad tiene duración y se extiende a esta hora
+                    (activity.duration > 0 && 
+                     calculateActivityEndHour(activity) >= hour && 
+                     activity.hour < hour)
+                )
             );
+        };
+        
+        // Función para calcular la hora de finalización de una actividad
+        const calculateActivityEndHour = (activity) => {
+            if (!activity.duration) return activity.hour;
             
-            // Si hay múltiples actividades, devolvemos la más reciente
-            if (activitiesForHour.length > 0) {
-                return activitiesForHour.reduce((latest, current) => 
-                    current.timestamp > latest.timestamp ? current : latest
-                );
+            const startMinutes = activity.hour * 60 + activity.minute;
+            const endMinutes = startMinutes + activity.duration;
+            return Math.floor(endMinutes / 60);
+        };
+        
+        // Función para calcular la hora exacta de finalización (hora y minutos)
+        const calculateActivityEndTime = (activity) => {
+            if (!activity.duration) return { hour: activity.hour, minute: activity.minute };
+            
+            const startMinutes = activity.hour * 60 + activity.minute;
+            const endMinutes = startMinutes + activity.duration;
+            return {
+                hour: Math.floor(endMinutes / 60),
+                minute: endMinutes % 60
+            };
+        };
+        
+        // Función para añadir un bloque de actividad a una celda
+        const addActivityBlock = (cell, activity, currentHour) => {
+            const activityBlock = document.createElement('div');
+            activityBlock.className = `activity-block activity-${activity.type}`;
+            
+            // Calculamos posición y altura del bloque
+            let topPercent = 0;
+            let heightPercent = 100;
+            
+            // Si la actividad comienza en esta hora, ajustamos el top
+            if (activity.hour === currentHour) {
+                topPercent = (activity.minute / 60) * 100;
             }
             
-            return null;
+            // Si la actividad tiene duración
+            if (activity.duration > 0) {
+                const endTime = calculateActivityEndTime(activity);
+                
+                // Si la actividad termina en esta hora, ajustamos la altura
+                if (endTime.hour === currentHour) {
+                    heightPercent = (endTime.minute / 60) * 100;
+                } 
+                // Si la actividad comienza y termina en horas diferentes
+                else if (activity.hour === currentHour) {
+                    heightPercent = 100 - topPercent;
+                }
+                // Si la actividad abarca toda esta hora (comenzó antes y termina después)
+                else if (activity.hour < currentHour && endTime.hour > currentHour) {
+                    topPercent = 0;
+                    heightPercent = 100;
+                }
+            }
+            
+            // Aplicamos estilos
+            activityBlock.style.top = `${topPercent}%`;
+            activityBlock.style.height = `${heightPercent}%`;
+            
+            // Tooltip para mostrar detalles
+            let tooltipText = `${formatTime(activity.time)}`;
+            if (activity.duration > 0) {
+                const endTime = calculateActivityEndTime(activity);
+                tooltipText += ` - ${String(endTime.hour).padStart(2, '0')}:${String(endTime.minute).padStart(2, '0')}`;
+            }
+            tooltipText += ` - ${getActivityName(activity.type)}`;
+            if (activity.duration > 0) {
+                tooltipText += ` (${activity.duration} min)`;
+            }
+            if (activity.note) {
+                tooltipText += ` - ${activity.note}`;
+            }
+            
+            activityBlock.title = tooltipText;
+            
+            cell.appendChild(activityBlock);
         };
         
         // Función para actualizar el historial
@@ -677,6 +786,11 @@
                 const formattedDate = formatDate(activity.date);
                 const formattedTime = formatTime(activity.time);
                 
+                let durationText = '';
+                if (activity.duration > 0) {
+                    durationText = `<div>${activity.duration} minutos</div>`;
+                }
+                
                 recordItem.innerHTML = `
                     <div class="record-info">
                         <div>${formattedDate} - ${formattedTime}</div>
@@ -684,6 +798,7 @@
                             <div class="activity-indicator activity-${activity.type}"></div>
                             <span>${getActivityName(activity.type)}</span>
                         </div>
+                        ${durationText}
                         ${activity.note ? `<div class="record-note">${activity.note}</div>` : ''}
                     </div>
                     <div class="record-actions">
