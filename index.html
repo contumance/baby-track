@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <!-- Resto del head se mantiene igual -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -422,7 +423,7 @@
             </div>
         </div>
     </main>
-    
+
     <script>
         // Modelo de datos
         let babyActivities = JSON.parse(localStorage.getItem('babyActivities')) || [];
@@ -466,12 +467,21 @@
                 const activityTime = document.getElementById('activity-time').value;
                 const activityNote = document.getElementById('activity-note').value;
                 
-                const activityTimestamp = new Date(`${activityDate}T${activityTime}`).getTime();
+                // MODIFICACIÓN: Crear un Date con la hora local especificada
+                // Esto asegura que no haya problemas con la zona horaria
+                const [year, month, day] = activityDate.split('-').map(Number);
+                const [hours, minutes] = activityTime.split(':').map(Number);
+                const activityDateTime = new Date(year, month - 1, day, hours, minutes);
+                const activityTimestamp = activityDateTime.getTime();
+                
+                // Para depuración
+                console.log(`Fecha seleccionada: ${activityDate}, Hora: ${activityTime}`);
+                console.log(`Fecha creada: ${activityDateTime}, Timestamp: ${activityTimestamp}`);
                 
                 const activity = {
                     id: Date.now(),
                     type: activityType,
-                    date: activityDate,
+                    date: activityDate,  // Mantener la fecha original como string
                     time: activityTime,
                     hour: parseInt(activityTime.split(':')[0], 10),
                     note: activityNote,
@@ -708,13 +718,17 @@
             }
         };
         
-        // Funciones de utilidad
+        // MODIFICADO: Función formatDate corregida para evitar problemas de zona horaria
         const formatDate = (dateString) => {
-            const date = new Date(dateString);
-            const day = date.getDate();
-            const month = date.getMonth() + 1;
-            const year = date.getFullYear();
-            return `${day}/${month}/${year}`;
+            // Dividimos la fecha en componentes y creamos un nuevo objeto Date
+            // asegurando que se interprete como fecha local
+            const [year, month, day] = dateString.split('-').map(Number);
+            const date = new Date(year, month - 1, day);
+            
+            // Para depuración
+            console.log(`formatDate: "${dateString}" -> ${date.toDateString()}`);
+            
+            return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
         };
         
         const formatTime = (timeString) => {
