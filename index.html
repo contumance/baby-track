@@ -1,227 +1,824 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Registro de Bebé</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      max-width: 400px;
-      margin: auto;
-    }
-    label, select, input {
-      display: block;
-      width: 100%;
-      margin-bottom: 10px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-    th, td {
-      border: 1px solid #ddd;
-      padding: 8px;
-      text-align: left;
-    }
-    th {
-      background: #f4f4f4;
-    }
-    button {
-      width: 100%;
-      padding: 10px;
-      background: #007BFF;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-  </style>
-  <!-- Incluir Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Incluir plugin de timeline para Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-timeline@0.1.1/dist/chartjs-chart-timeline.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Registro de Rutina del Bebé</title>
+    <style>
+        :root {
+            --color-teta: #F4A261;
+            --color-mema: #E76F51;
+            --color-panal: #FFD700;
+            --color-despierta: #2A9D8F;
+            --color-duerme-brazos: #48CAE4;
+            --color-duerme-cuna: #4361EE;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f7f7f7;
+            color: #333;
+        }
+        
+        header {
+            background-color: #264653;
+            color: white;
+            text-align: center;
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        main {
+            padding: 1rem;
+            max-width: 100%;
+            margin: 0 auto;
+        }
+        
+        .form-container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 1rem;
+        }
+        
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            padding-bottom: 1rem;
+        }
+        
+        label {
+            font-weight: bold;
+        }
+        
+        input, select {
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            -webkit-appearance: none;
+            appearance: none;
+            background-color: white;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        /* Estilo para input date en Safari móvil */
+        input[type="date"],
+        input[type="time"] {
+            min-height: 44px;
+        }
+        
+        button {
+            background-color: #2A9D8F;
+            color: white;
+            border: none;
+            padding: 0.75rem;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            -webkit-appearance: none;
+            appearance: none;
+            min-height: 44px;
+            touch-action: manipulation;
+        }
+        
+        button:hover {
+            background-color: #217b6f;
+        }
+        
+        .chart-container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+        
+        .grid-chart {
+            display: grid;
+            grid-template-columns: 50px repeat(5, 1fr);
+            grid-auto-rows: 30px;
+            gap: 1px;
+            min-width: 100%;
+        }
+        
+        .grid-header {
+            position: sticky;
+            top: 0;
+            background-color: #264653;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            text-align: center;
+            padding: 0.25rem;
+        }
+        
+        .time-label {
+            background-color: #264653;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+        }
+        
+        .grid-cell {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.8rem;
+            position: relative;
+        }
+        
+        .activity-teta {
+            background-color: var(--color-teta);
+        }
+        
+        .activity-mema {
+            background-color: var(--color-mema);
+        }
+        
+        .activity-panal {
+            background-color: var(--color-panal);
+        }
+        
+        .activity-despierta {
+            background-color: var(--color-despierta);
+        }
+        
+        .activity-duerme-brazos {
+            background-color: var(--color-duerme-brazos);
+        }
+        
+        .activity-duerme-cuna {
+            background-color: var(--color-duerme-cuna);
+        }
+        
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            justify-content: center;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.85rem;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+        
+        .selected-dates {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .date-pill {
+            background-color: #e0e0e0;
+            border-radius: 16px;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .date-pill button {
+            background: none;
+            border: none;
+            color: #666;
+            padding: 0;
+            font-size: 1rem;
+            cursor: pointer;
+            height: 20px;
+            width: 20px;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .tab-container {
+            display: flex;
+            margin-bottom: 1rem;
+            width: 100%;
+            overflow: hidden;
+            border-radius: 8px;
+        }
+        
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 0.75rem 0.5rem;
+            background-color: #e0e0e0;
+            cursor: pointer;
+            white-space: nowrap;
+            font-size: 0.95rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .tab.active {
+            background-color: #264653;
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .records-list {
+            background-color: white;
+            border-radius: 8px;
+            padding: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .record-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .record-item:last-child {
+            border-bottom: none;
+        }
+        
+        .record-activity {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .activity-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .record-actions button {
+            background: none;
+            border: none;
+            color: #d9534f;
+            cursor: pointer;
+            padding: 0.25rem;
+        }
+        
+        @media (min-width: 768px) {
+            main {
+                max-width: 800px;
+            }
+            
+            .grid-chart {
+                grid-template-columns: 50px repeat(5, 1fr);
+            }
+        }
+    </style>
 </head>
 <body>
-
-  <h2>Registro de Actividades</h2>
-  
-  <label for="actividad">Actividad:</label>
-  <select id="actividad">
-    <option value="Teta">Teta</option>
-    <option value="Mema">Mema</option>
-    <option value="Pañal">Pañal</option>
-    <option value="Despierta">Despierta</option>
-    <option value="Duerme en Brazos">Duerme en Brazos</option>
-    <option value="Duerme en Cuna">Duerme en Cuna</option>
-  </select>
-
-  <label for="fecha">Fecha y Hora:</label>
-  <input type="datetime-local" id="fecha" />
-
-  <label for="duracion">Duración (minutos):</label>
-  <input type="number" id="duracion" value="5" min="1" />
-
-  <button onclick="guardarActividad()">Guardar Actividad</button>
-
-  <h3>Historial</h3>
-  <table>
-    <thead>
-      <tr>
-        <th>Fecha</th>
-        <th>Actividad</th>
-        <th>Duración</th>
-        <th>Acción</th>
-      </tr>
-    </thead>
-    <tbody id="tablaHistorial"></tbody>
-  </table>
-
-  <h3>Visualización del Día</h3>
-  <label for="fechaFiltro">Selecciona la Fecha:</label>
-  <input type="date" id="fechaFiltro" />
-  <canvas id="timelineChart" width="400" height="200"></canvas>
-
-  <script>
-    // Pre-cargar la fecha y hora actual en el input
-    document.getElementById("fecha").value = new Date().toISOString().slice(0, 16);
-    // Establecer el filtro de fecha a hoy
-    let todayStr = new Date().toISOString().split("T")[0];
-    document.getElementById("fechaFiltro").value = todayStr;
-
-    function guardarActividad() {
-      const actividad = document.getElementById("actividad").value;
-      const fecha = document.getElementById("fecha").value;
-      const duracion = parseInt(document.getElementById("duracion").value) || 5;
-      if (!actividad || !fecha) return alert("Complete todos los campos.");
-
-      let historial = JSON.parse(localStorage.getItem("historialBebe")) || [];
-      historial.push({ fecha, actividad, duracion });
-      localStorage.setItem("historialBebe", JSON.stringify(historial));
-
-      actualizarTabla();
-      actualizarGrafico();
-    }
-
-    function actualizarTabla() {
-      const historial = JSON.parse(localStorage.getItem("historialBebe")) || [];
-      const tabla = document.getElementById("tablaHistorial");
-      tabla.innerHTML = "";
-      historial.forEach((item, index) => {
-        const fila = `<tr>
-          <td>${item.fecha}</td>
-          <td>${item.actividad}</td>
-          <td>${item.duracion} min</td>
-          <td><button onclick="eliminarActividad(${index})">🗑</button></td>
-        </tr>`;
-        tabla.innerHTML += fila;
-      });
-    }
-
-    function eliminarActividad(index) {
-      let historial = JSON.parse(localStorage.getItem("historialBebe")) || [];
-      historial.splice(index, 1);
-      localStorage.setItem("historialBebe", JSON.stringify(historial));
-      actualizarTabla();
-      actualizarGrafico();
-    }
-
-    // Actualizar gráfico según la fecha seleccionada
-    function actualizarGrafico() {
-      let filtro = document.getElementById("fechaFiltro").value;
-      if (!filtro) {
-        filtro = new Date().toISOString().split("T")[0];
-        document.getElementById("fechaFiltro").value = filtro;
-      }
-      let historial = JSON.parse(localStorage.getItem("historialBebe")) || [];
-      // Filtrar registros que pertenecen a la fecha elegida (comparando solo la parte de la fecha)
-      let registrosFiltrados = historial.filter(record => {
-        let recordDate = new Date(record.fecha).toISOString().split("T")[0];
-        return recordDate === filtro;
-      });
-      
-      // Construir los datos para el gráfico usando el plugin timeline
-      const colorMap = {
-        'Teta': '#007bff',
-        'Mema': '#ff69b4',
-        'Pañal': '#ffa500',
-        'Despierta': '#ffff00',
-        'Duerme en Brazos': '#800080',
-        'Duerme en Cuna': '#008000'
-      };
-      
-      let dataPoints = [];
-      registrosFiltrados.forEach(record => {
-        let start = new Date(record.fecha);
-        let end = new Date(start.getTime() + record.duracion * 60000);
-        dataPoints.push({
-          x: start,
-          x2: end,
-          y: 'Actividades',
-          label: record.actividad,
-          backgroundColor: colorMap[record.actividad] || '#808080'
-        });
-      });
-      
-      // Si el gráfico ya existe, actualiza los datos; si no, lo crea.
-      if (window.timelineChart) {
-        window.timelineChart.data.datasets[0].data = dataPoints;
-        window.timelineChart.update();
-      } else {
-        const ctx = document.getElementById('timelineChart').getContext('2d');
-        window.timelineChart = new Chart(ctx, {
-          type: 'timeline',
-          data: {
-            datasets: [{
-              label: 'Actividades',
-              data: dataPoints
-            }]
-          },
-          options: {
-            scales: {
-              x: {
-                type: 'time',
-                time: {
-                  unit: 'minute',
-                  displayFormats: {
-                    minute: 'HH:mm'
-                  }
-                },
-                title: {
-                  display: true,
-                  text: 'Hora'
+    <header>
+        <h1>Registro de Rutina del Bebé</h1>
+        <div id="version" style="font-size: 0.75rem; margin-top: 0.25rem;">Versión móvil 1.1</div>
+    </header>
+    
+    <main>
+        <div class="tab-container">
+            <div class="tab active" data-tab="register">Registrar</div>
+            <div class="tab" data-tab="view">Visualizar</div>
+            <div class="tab" data-tab="history">Historial</div>
+        </div>
+        
+        <div id="register-tab" class="tab-content active">
+            <div class="form-container">
+                <form id="activity-form">
+                    <div>
+                        <label for="activity-type">Actividad:</label>
+                        <select id="activity-type" required>
+                            <option value="">Seleccionar actividad</option>
+                            <option value="teta">Teta</option>
+                            <option value="mema">Mema</option>
+                            <option value="panal">Pañal</option>
+                            <option value="despierta">Despierta</option>
+                            <option value="duerme-brazos">Duerme en brazos</option>
+                            <option value="duerme-cuna">Duerme en cuna</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label for="activity-date">Fecha:</label>
+                        <input type="date" id="activity-date" required>
+                    </div>
+                    
+                    <div>
+                        <label for="activity-time">Hora:</label>
+                        <input type="time" id="activity-time" required>
+                    </div>
+                    
+                    <div>
+                        <label for="activity-note">Nota (opcional):</label>
+                        <input type="text" id="activity-note" placeholder="Añadir comentario...">
+                    </div>
+                    
+                    <button type="submit">Guardar Actividad</button>
+                </form>
+            </div>
+        </div>
+        
+        <div id="view-tab" class="tab-content">
+            <div class="controls">
+                <button id="add-date-btn">+ Añadir fecha</button>
+                <input type="date" id="chart-date-picker" style="display: none;">
+            </div>
+            
+            <div class="selected-dates" id="selected-dates">
+                <!-- Las fechas seleccionadas se mostrarán aquí -->
+            </div>
+            
+            <div class="chart-container">
+                <div class="grid-chart" id="activity-chart">
+                    <!-- El gráfico se generará dinámicamente aquí -->
+                </div>
+                
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color activity-teta"></div>
+                        <span>TETA</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color activity-mema"></div>
+                        <span>MEMA</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color activity-panal"></div>
+                        <span>PAÑAL</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color activity-despierta"></div>
+                        <span>DESPIERTA</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color activity-duerme-brazos"></div>
+                        <span>DUERME EN BRAZOS</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color activity-duerme-cuna"></div>
+                        <span>DUERME EN CUNA</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="history-tab" class="tab-content">
+            <div class="controls">
+                <input type="date" id="history-date-filter">
+                <select id="history-activity-filter">
+                    <option value="">Todas las actividades</option>
+                    <option value="teta">Teta</option>
+                    <option value="mema">Mema</option>
+                    <option value="panal">Pañal</option>
+                    <option value="despierta">Despierta</option>
+                    <option value="duerme-brazos">Duerme en brazos</option>
+                    <option value="duerme-cuna">Duerme en cuna</option>
+                </select>
+            </div>
+            
+            <div class="records-list" id="history-list">
+                <!-- El historial se generará dinámicamente aquí -->
+            </div>
+        </div>
+    </main>
+    
+    <script>
+        // Modelo de datos
+        let babyActivities = JSON.parse(localStorage.getItem('babyActivities')) || [];
+        const selectedDates = [];
+        
+        // Configuración de fecha y hora actuales
+        const setCurrentDateTime = () => {
+            const now = new Date();
+            const dateInput = document.getElementById('activity-date');
+            const timeInput = document.getElementById('activity-time');
+            
+            // Formato YYYY-MM-DD para input date
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const formattedDate = `${year}-${month}-${day}`;
+            
+            // Formato HH:MM para input time
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const formattedTime = `${hours}:${minutes}`;
+            
+            // Establecer valores y disparar eventos para asegurar que los navegadores móviles los detecten
+            dateInput.value = formattedDate;
+            timeInput.value = formattedTime;
+            
+            // Disparar eventos para asegurar compatibilidad móvil
+            dateInput.dispatchEvent(new Event('change', { bubbles: true }));
+            timeInput.dispatchEvent(new Event('change', { bubbles: true }));
+        };
+        
+        // Controlador para el formulario de actividad
+        const handleActivityForm = () => {
+            const form = document.getElementById('activity-form');
+            
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                const activityType = document.getElementById('activity-type').value;
+                const activityDate = document.getElementById('activity-date').value;
+                const activityTime = document.getElementById('activity-time').value;
+                const activityNote = document.getElementById('activity-note').value;
+                
+                const activityTimestamp = new Date(`${activityDate}T${activityTime}`).getTime();
+                
+                const activity = {
+                    id: Date.now(),
+                    type: activityType,
+                    date: activityDate,
+                    time: activityTime,
+                    hour: parseInt(activityTime.split(':')[0], 10),
+                    note: activityNote,
+                    timestamp: activityTimestamp
+                };
+                
+                babyActivities.push(activity);
+                localStorage.setItem('babyActivities', JSON.stringify(babyActivities));
+                
+                form.reset();
+                setCurrentDateTime();
+                
+                // Si hay fechas seleccionadas, actualizamos el gráfico
+                if (selectedDates.length > 0) {
+                    generateChart();
                 }
-              },
-              y: {
-                type: 'category',
-                labels: ['Actividades']
-              }
-            },
-            plugins: {
-              tooltip: {
-                callbacks: {
-                  label: function(context) {
-                    const point = context.raw;
-                    const start = new Date(point.x);
-                    const end = new Date(point.x2);
-                    return point.label + ': ' + start.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) +
-                           ' - ' + end.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                  }
+                
+                // Actualizamos el historial si estamos en esa pestaña
+                updateHistoryList();
+                
+                alert('¡Actividad registrada con éxito!');
+            });
+        };
+        
+        // Función para manejar fechas seleccionadas
+        const handleDateSelection = () => {
+            const addDateBtn = document.getElementById('add-date-btn');
+            const datePicker = document.getElementById('chart-date-picker');
+            const selectedDatesContainer = document.getElementById('selected-dates');
+            
+            addDateBtn.addEventListener('click', () => {
+                datePicker.style.display = 'block';
+                datePicker.focus();
+            });
+            
+            datePicker.addEventListener('change', () => {
+                const selectedDate = datePicker.value;
+                
+                // Verificamos si la fecha ya está seleccionada
+                if (!selectedDates.includes(selectedDate) && selectedDates.length < 5) {
+                    selectedDates.push(selectedDate);
+                    updateSelectedDatesUI();
+                    generateChart();
+                } else if (selectedDates.length >= 5) {
+                    alert('No puedes seleccionar más de 5 fechas a la vez.');
                 }
-              }
+                
+                datePicker.style.display = 'none';
+                datePicker.value = '';
+            });
+            
+            // Función para actualizar UI de fechas seleccionadas
+            const updateSelectedDatesUI = () => {
+                selectedDatesContainer.innerHTML = '';
+                
+                selectedDates.sort().forEach(date => {
+                    const formattedDate = formatDate(date);
+                    const dateElement = document.createElement('div');
+                    dateElement.className = 'date-pill';
+                    dateElement.innerHTML = `
+                        ${formattedDate}
+                        <button data-date="${date}">&times;</button>
+                    `;
+                    selectedDatesContainer.appendChild(dateElement);
+                });
+                
+                // Añadimos listeners a los botones de eliminar
+                const removeButtons = document.querySelectorAll('.date-pill button');
+                removeButtons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        const dateToRemove = button.getAttribute('data-date');
+                        const index = selectedDates.indexOf(dateToRemove);
+                        if (index !== -1) {
+                            selectedDates.splice(index, 1);
+                            updateSelectedDatesUI();
+                            generateChart();
+                        }
+                    });
+                });
+            };
+        };
+        
+        // Función para generar el gráfico
+        const generateChart = () => {
+            const chartContainer = document.getElementById('activity-chart');
+            chartContainer.innerHTML = '';
+            
+            // Si no hay fechas seleccionadas, mostramos un mensaje
+            if (selectedDates.length === 0) {
+                chartContainer.innerHTML = '<p style="grid-column: 1 / -1; text-align: center; padding: 2rem;">Selecciona fechas para visualizar el gráfico</p>';
+                return;
             }
-          }
+            
+            // Creamos la cabecera del gráfico
+            const headerRow = document.createElement('div');
+            headerRow.className = 'grid-header';
+            headerRow.style.gridColumn = '1 / 2';
+            headerRow.textContent = 'Hora';
+            chartContainer.appendChild(headerRow);
+            
+            // Añadimos las cabeceras de fecha
+            selectedDates.sort().forEach((date, index) => {
+                const formattedDate = formatDate(date);
+                const dateHeader = document.createElement('div');
+                dateHeader.className = 'grid-header';
+                dateHeader.style.gridColumn = `${index + 2} / ${index + 3}`;
+                dateHeader.textContent = formattedDate;
+                chartContainer.appendChild(dateHeader);
+            });
+            
+            // Creamos las filas de horas (0-23)
+            for (let hour = 0; hour < 24; hour++) {
+                // Etiqueta de hora
+                const timeLabel = document.createElement('div');
+                timeLabel.className = 'time-label';
+                timeLabel.style.gridRow = `${hour + 2} / ${hour + 3}`;
+                timeLabel.textContent = `${hour}:00`;
+                chartContainer.appendChild(timeLabel);
+                
+                // Celdas de actividad para cada fecha
+                selectedDates.forEach((date, index) => {
+                    const cell = document.createElement('div');
+                    cell.className = 'grid-cell';
+                    cell.style.gridColumn = `${index + 2} / ${index + 3}`;
+                    cell.style.gridRow = `${hour + 2} / ${hour + 3}`;
+                    
+                    // Buscamos la actividad para esta fecha y hora
+                    const activity = findActivity(date, hour);
+                    if (activity) {
+                        cell.classList.add(`activity-${activity.type}`);
+                        
+                        // Tooltip para mostrar detalles
+                        cell.title = `${formatTime(activity.time)} - ${getActivityName(activity.type)}${activity.note ? ` - ${activity.note}` : ''}`;
+                    }
+                    
+                    chartContainer.appendChild(cell);
+                });
+            }
+        };
+        
+        // Función para encontrar la actividad más reciente para una fecha y hora
+        const findActivity = (date, hour) => {
+            // Filtramos actividades para esta fecha y hora
+            const activitiesForHour = babyActivities.filter(activity => 
+                activity.date === date && 
+                activity.hour === hour
+            );
+            
+            // Si hay múltiples actividades, devolvemos la más reciente
+            if (activitiesForHour.length > 0) {
+                return activitiesForHour.reduce((latest, current) => 
+                    current.timestamp > latest.timestamp ? current : latest
+                );
+            }
+            
+            return null;
+        };
+        
+        // Función para actualizar el historial
+        const updateHistoryList = () => {
+            const historyList = document.getElementById('history-list');
+            const dateFilter = document.getElementById('history-date-filter').value;
+            const activityFilter = document.getElementById('history-activity-filter').value;
+            
+            // Filtramos las actividades
+            let filteredActivities = [...babyActivities];
+            
+            if (dateFilter) {
+                filteredActivities = filteredActivities.filter(activity => activity.date === dateFilter);
+            }
+            
+            if (activityFilter) {
+                filteredActivities = filteredActivities.filter(activity => activity.type === activityFilter);
+            }
+            
+            // Ordenamos por fecha y hora (más recientes primero)
+            filteredActivities.sort((a, b) => b.timestamp - a.timestamp);
+            
+            // Limpiamos el contenedor
+            historyList.innerHTML = '';
+            
+            // Si no hay actividades, mostramos un mensaje
+            if (filteredActivities.length === 0) {
+                historyList.innerHTML = '<p style="text-align: center; padding: 1rem;">No hay actividades registradas</p>';
+                return;
+            }
+            
+            // Generamos los elementos del historial
+            filteredActivities.forEach(activity => {
+                const recordItem = document.createElement('div');
+                recordItem.className = 'record-item';
+                
+                const formattedDate = formatDate(activity.date);
+                const formattedTime = formatTime(activity.time);
+                
+                recordItem.innerHTML = `
+                    <div class="record-info">
+                        <div>${formattedDate} - ${formattedTime}</div>
+                        <div class="record-activity">
+                            <div class="activity-indicator activity-${activity.type}"></div>
+                            <span>${getActivityName(activity.type)}</span>
+                        </div>
+                        ${activity.note ? `<div class="record-note">${activity.note}</div>` : ''}
+                    </div>
+                    <div class="record-actions">
+                        <button data-id="${activity.id}" class="delete-record">🗑️</button>
+                    </div>
+                `;
+                
+                historyList.appendChild(recordItem);
+            });
+            
+            // Añadimos event listeners para los botones de eliminar
+            const deleteButtons = document.querySelectorAll('.delete-record');
+            deleteButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const activityId = parseInt(button.getAttribute('data-id'));
+                    if (confirm('¿Estás seguro de que quieres eliminar esta actividad?')) {
+                        deleteActivity(activityId);
+                    }
+                });
+            });
+        };
+        
+        // Función para eliminar una actividad
+        const deleteActivity = (id) => {
+            babyActivities = babyActivities.filter(activity => activity.id !== id);
+            localStorage.setItem('babyActivities', JSON.stringify(babyActivities));
+            
+            // Actualizamos la UI
+            updateHistoryList();
+            if (selectedDates.length > 0) {
+                generateChart();
+            }
+        };
+        
+        // Funciones de utilidad
+        const formatDate = (dateString) => {
+            const date = new Date(dateString);
+            const day = date.getDate();
+            const month = date.getMonth() + 1;
+            const year = date.getFullYear();
+            return `${day}/${month}/${year}`;
+        };
+        
+        const formatTime = (timeString) => {
+            return timeString;
+        };
+        
+        const getActivityName = (activityType) => {
+            const activityNames = {
+                'teta': 'Teta',
+                'mema': 'Mema',
+                'panal': 'Pañal',
+                'despierta': 'Despierta',
+                'duerme-brazos': 'Duerme en brazos',
+                'duerme-cuna': 'Duerme en cuna'
+            };
+            
+            return activityNames[activityType] || activityType;
+        };
+        
+        // Manejo de pestañas
+        const initTabs = () => {
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabs.forEach(tab => {
+                // Usar touchend para mejor compatibilidad con móviles
+                tab.addEventListener('click', handleTabClick);
+                tab.addEventListener('touchend', function(e) {
+                    e.preventDefault();
+                    handleTabClick.call(this, e);
+                });
+            });
+            
+            function handleTabClick(e) {
+                const tabName = this.getAttribute('data-tab');
+                
+                // Actualizamos las clases activas
+                tabs.forEach(t => t.classList.remove('active'));
+                tabContents.forEach(tc => tc.classList.remove('active'));
+                
+                this.classList.add('active');
+                
+                const targetTab = document.getElementById(`${tabName}-tab`);
+                if (targetTab) {
+                    targetTab.classList.add('active');
+                    
+                    // Si cambiamos a la pestaña de historial, actualizamos la lista
+                    if (tabName === 'history') {
+                        updateHistoryList();
+                    } else if (tabName === 'register') {
+                        setCurrentDateTime();
+                    } else if (tabName === 'view' && selectedDates.length > 0) {
+                        generateChart();
+                    }
+                }
+            }
+        };
+        
+        // Inicialización de filtros de historial
+        const initHistoryFilters = () => {
+            const dateFilter = document.getElementById('history-date-filter');
+            const activityFilter = document.getElementById('history-activity-filter');
+            
+            dateFilter.addEventListener('change', updateHistoryList);
+            activityFilter.addEventListener('change', updateHistoryList);
+        };
+        
+        // Inicialización de la aplicación
+        document.addEventListener('DOMContentLoaded', () => {
+            // Intentamos establecer la fecha y hora con un pequeño retraso para dispositivos móviles
+            setTimeout(() => {
+                setCurrentDateTime();
+            }, 100);
+            
+            handleActivityForm();
+            handleDateSelection();
+            initTabs();
+            initHistoryFilters();
+            
+            // Aseguramos que las pestañas funcionen correctamente en móviles
+            const tabInit = () => {
+                const tabs = document.querySelectorAll('.tab');
+                const tabContents = document.querySelectorAll('.tab-content');
+                
+                // Aseguramos que la pestaña activa se muestre correctamente
+                tabs.forEach(tab => {
+                    if (tab.classList.contains('active')) {
+                        const tabName = tab.getAttribute('data-tab');
+                        const tabContent = document.getElementById(`${tabName}-tab`);
+                        if (tabContent) {
+                            tabContent.classList.add('active');
+                        }
+                    }
+                });
+            };
+            
+            // Ejecutar inicialización extra para móviles
+            tabInit();
+            
+            // Si hay actividades, mostramos el historial por defecto
+            if (babyActivities.length > 0) {
+                updateHistoryList();
+            }
         });
-      }
-    }
-
-    // Actualizar gráfico al cambiar la fecha del filtro
-    document.getElementById("fechaFiltro").addEventListener("change", actualizarGrafico);
-
-    // Inicializar tabla y gráfico al cargar la página
-    actualizarTabla();
-    actualizarGrafico();
-  </script>
+    </script>
 </body>
 </html>
