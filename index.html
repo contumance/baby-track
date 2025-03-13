@@ -8,16 +8,17 @@
     <title>Aurora</title>
     <style>
         :root {
---color-teta: #F4A261;       /* Naranja suave */
---color-mema: #D72638;       /* Rojo vibrante */
---color-panal: #FFC300;      /* Amarillo intenso */
---color-despierta: #00875A;  /* Verde esmeralda */
---color-duerme-brazos: #00A6FB; /* Azul cielo brillante */
---color-duerme-cuna: #4C2A85;   /* Púrpura profundo */
---color-jugar: #B565A7;      /* Lila llamativo */
---color-bano: #2CA58D;       /* Verde menta */
---color-vitamina-d: #E63946; /* Rojo coral */
---color-factor-ag: #228B22;  /* Verde bosque */
+        --color-teta: #F4A261;       /* Naranja suave */
+        --color-mema: #D72638;       /* Rojo vibrante */
+        --color-panal: #FFC300;      /* Amarillo intenso */
+        --color-despierta: #00875A;  /* Verde esmeralda */
+        --color-duerme-brazos: #00A6FB; /* Azul cielo brillante */
+        --color-duerme-cuna: #4C2A85;   /* Púrpura profundo */
+        --color-duerme-cama: #672a85;   /* Púrpura claro */
+        --color-jugar: #B565A7;      /* Lila llamativo */
+        --color-bano: #2CA58D;       /* Verde menta */
+        --color-vitamina-d: #17ffa2; /* Turmalina intenso */
+        --color-factor-ag: #3dfc3d;  /* Verde intenso */
         }
         
         body {
@@ -170,6 +171,10 @@
         
         .activity-duerme-cuna {
             background-color: var(--color-duerme-cuna);
+        }
+
+        .activity-duerme-cama {
+            background-color: var(--color-duerme-cama);
         }
 
         .activity-jugar {
@@ -364,6 +369,7 @@
                             <option value="despierta">Despierta</option>
                             <option value="duerme-brazos">Duerme en brazos</option>
                             <option value="duerme-cuna">Duerme en cuna</option>
+                            <option value="duerme-cama">Duerme en cama</option>
                             <option value="jugar">Jugar</option>
                             <option value="bano">Baño</option>
                             <option value="vitamina-d">Vitamina D</option>
@@ -437,6 +443,10 @@
                         <span>DUERME EN CUNA</span>
                     </div>
                     <div class="legend-item">
+                        <div class="legend-color activity-duerme-cama"></div>
+                        <span>DUERME EN CAMA</span>
+                    </div>
+                    <div class="legend-item">
                         <div class="legend-color activity-jugar"></div>
                         <span>JUGAR</span>
                     </div>
@@ -467,6 +477,11 @@
                     <option value="despierta">Despierta</option>
                     <option value="duerme-brazos">Duerme en brazos</option>
                     <option value="duerme-cuna">Duerme en cuna</option>
+                    <option value="duerme-cama">Duerme en cama</option>
+                    <option value="jugar">Jugar</option>
+                    <option value="bano">Baño</option>
+                    <option value="vitamina-d">Vitamina D</option>
+                    <option value="factor-ag">Factor AG</option>
                 </select>
             </div>
             
@@ -897,7 +912,12 @@
                 'panal': 'Pañal',
                 'despierta': 'Despierta',
                 'duerme-brazos': 'Duerme en brazos',
-                'duerme-cuna': 'Duerme en cuna'
+                'duerme-cuna': 'Duerme en cuna',
+                'duerme-cama': 'Duerme en cama',
+                'jugar': 'Jugar',
+                'bano': 'Baño',
+                'vitamina-d': 'Vitamina D',
+                'factor-ag': 'Factor AG'
             };
             
             return activityNames[activityType] || activityType;
