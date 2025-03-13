@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
-    <title>Registro de Rutina del Bebé</title>
+    <title>Aurora</title>
     <style>
         :root {
             --color-teta: #F4A261;
@@ -14,6 +14,10 @@
             --color-despierta: #2A9D8F;
             --color-duerme-brazos: #48CAE4;
             --color-duerme-cuna: #4361EE;
+            --color-jugar: #9370DB;           /* Púrpura medio */
+            --color-bano: #20B2AA;            /* Verde azulado claro */
+            --color-vitamina-d: #FF6347;      /* Tomate */
+            --color-factor-ag: #3CB371;       /* Verde mar medio */
         }
         
         body {
@@ -166,6 +170,22 @@
         
         .activity-duerme-cuna {
             background-color: var(--color-duerme-cuna);
+        }
+
+        .activity-jugar {
+            background-color: var(--color-jugar);
+        }
+
+        .activity-bano {
+            background-color: var(--color-bano);
+        }
+
+        .activity-vitamina-d {
+            background-color: var(--color-vitamina-d);
+        }
+
+        .activity-factor-ag {
+            background-color: var(--color-factor-ag);
         }
         
         .legend {
@@ -344,6 +364,10 @@
                             <option value="despierta">Despierta</option>
                             <option value="duerme-brazos">Duerme en brazos</option>
                             <option value="duerme-cuna">Duerme en cuna</option>
+                            <option value="jugar">Jugar</option>
+                            <option value="bano">Baño</option>
+                            <option value="vitamina-d">Vitamina D</option>
+                            <option value="factor-ag">Factor AG</option>
                         </select>
                     </div>
                     
@@ -411,6 +435,22 @@
                     <div class="legend-item">
                         <div class="legend-color activity-duerme-cuna"></div>
                         <span>DUERME EN CUNA</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color activity-jugar"></div>
+                        <span>JUGAR</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color activity-bano"></div>
+                        <span>BAÑO</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color activity-vitamina-d"></div>
+                        <span>VITAMINA D</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color activity-factor-ag"></div>
+                        <span>FACTOR AG</span>
                     </div>
                 </div>
             </div>
